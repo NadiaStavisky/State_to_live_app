@@ -1,0 +1,96 @@
+---
+title: "State_to_live app"
+author: "Nadia Stavisky"
+date: "October 17, 2019"
+output: ioslides_presentation
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      cache = FALSE,
+                      tidy = TRUE,
+                      tidy.opts = list(width.cutoff = 60))
+#load libraries
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(knitr)
+```
+
+## Intorduction
+This [app](http://rpubs.com/NadiaStavisky/540387) allows users to chose US States based on their climat preferences:
+- How many days in a year you are willing to freeze?
+- How many States you would like to consider from?
+- Would you like to consider other details such as population, life expectancy etc.?
+
+## Recources
+Data set used for application: state.x77.
+state.x77 - matrix with 50 rows and 8 columns giving the following statistics in the respective columns:
+- **Population:** population estimate as of July 1, 1975
+- **Income:** per capita income (1974)
+- **Illiteracy:** illiteracy (1970, percent of population)
+- **Life Exp:** life expectancy in years (1969-71)
+- **Murder:** murder and non-negligent manslaughter rate per 100,000 population (1976)
+- **HS Grad:** percent high-school graduates (1970)
+- **Frost:** mean number of days with minimum temperature below freezing (1931-1960) in capital or large city
+- **Area:**  land area in square miles
+Source
+U.S. Department of Commerce, Bureau of the Census (1977) Statistical Abstract of the United States.
+U.S. Department of Commerce, Bureau of the Census (1977) County and City Data Book.
+
+## Instructions
+### Filters
+1. Mean number of days with minimum temperature below freezing (1931-1960)
+Summary of number of days below freezing accross all States
+```{r data processing, echo = FALSE}
+#set up dtat set
+State <- state.abb
+state_data <- as.data.frame(cbind(state.abb,state.x77))
+num_col <- c("Population", "Income", "Illiteracy", "Life Exp", "Murder", "HS Grad", "Frost", "Area")
+state_data[num_col] <- sapply(sapply(state_data[num_col],as.character), as.numeric)
+summary(state_data$Frost)
+```
+
+2. Number of Top warmest states (1-50)
+Number of states in the data set:
+```{r states_num}
+dim(state_data)[1]
+```
+
+## Plot
+Map plot shows selected States based on applied filters 
+(example below shows States that on average have maximum 25 freezing days within a year):
+```{r map}
+borders <- list(color = toRGB("red"))
+map_options <- list(
+            scope = 'usa',
+            projection = list(type = 'albers usa'),
+            showlakes = TRUE,
+            lakecolor = toRGB("white")
+        )
+map_data <- state_data %>%
+    filter(Frost >= 0 & Frost <= 25)
+plot_ly(data = map_data, z = map_data$Frost, locations = map_data$state.abb,
+                type = 'choropleth', locationmode = 'USA-states',
+                color = map_data$Frost, colors = 'Spectral', marker = list(line = borders)) %>%
+            layout(geo = map_options)
+
+```
+
+
+## Table
+Table provides Statistical details of the US States:
+```{r table}
+kable(map_data, format = "pandoc")
+
+```
+
+
+## What State did you chose?
+
+
+
+
+
